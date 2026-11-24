@@ -161,6 +161,33 @@ app.post('/webhook', (req, res) => {
 app.listen(4000);
 ```
 
+## Forwarding to Kafka / a message bus
+
+`EventForwarder` is the pluggable sink interface (`send(event)`, optional
+`stop()`); `HttpWebhookSender` already implements it. `KafkaForwarder`
+publishes the same decoded JSON envelope to a Kafka topic, keyed by the stable
+event id so consumers can deduplicate. It takes any kafkajs-compatible
+producer — `horizon-listener` has no new runtime dependency:
+
+```ts
+import { Kafka } from 'kafkajs';
+import { createForwarder, KafkaForwarder } from 'horizon-listener';
+
+const producer = new Kafka({ brokers: ['localhost:9092'] }).producer();
+await producer.connect();
+
+const listener = createForwarder({
+  eventSource: { rpcUrl, networkPassphrase, contractIds, startLedger, decode: 'native' },
+  forwarder: new KafkaForwarder({ topic: 'stellar.contract-events', producer }),
+});
+await listener.start();
+```
+
+Custom buses only need to implement `EventForwarder` and be passed to
+`createForwarder`. Call `await forwarder.stop()` on shutdown to disconnect the
+producer. See [`examples/kafka-forwarder.ts`](examples/kafka-forwarder.ts) for a
+complete example.
+
 ## Decoding events to native JS (`decode`)
 
 By default (`decode: 'none'`) `RpcEventSource` emits raw SDK values. Pass
