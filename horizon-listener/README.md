@@ -90,6 +90,26 @@ listener.start().catch((err) => {
 `eventSource` and `onEvent` (e.g. `mode`, `maxRetries`, `logger`,
 `onEventFailure`, `metrics`, `tracer`).
 
+## Tailing decoded events from the CLI
+
+For debugging, use the CLI to follow decoded events for one or more contracts.
+Each event is printed to stdout as a single line of JSON (bigint values as
+decimal strings, bytes as hex, maps as objects), so it can be piped to `jq`:
+
+```sh
+compliance-adapters tail \
+  --contract CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABH4M \
+  --from 1000000 \
+  --rpc-url https://soroban-testnet.stellar.org
+```
+
+`horizon-listener tail ...` is an alias for the same command. Flags:
+`--contract` (repeatable, required), `--from` (starting ledger, required),
+`--rpc-url`, `--network-passphrase`, `--poll-interval-ms` (default `1000`) and
+`--limit` (stop after N events). The source is `RpcEventSource` with
+`decode: 'native'`; cursor values are reused between polls. Press Ctrl+C to
+stop; the command also exits cleanly on SIGTERM.
+
 ## Manual wiring
 
 If you need more control (a custom `EventSource`, extra processing in
