@@ -542,6 +542,7 @@ operator environment.
 
 ## Links
 
+- [Production operations runbook](../docs/runbooks/horizon-listener.md)
 - [Root README](../README.md)
 - [`compliance-primitives`](https://github.com/stellar-compliance-kit/compliance-primitives) —
   the on-chain `denylist-gate` and `allowlist-token` Soroban contracts this
